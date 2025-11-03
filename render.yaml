@@ -1,0 +1,25 @@
+# Render Blueprint for Job Organizer - Minimal Version
+# This configuration deploys a single Reflex service to test deployment
+
+services:
+  # Reflex App (Frontend + Backend in one)
+  - type: web
+    name: job-organizer-minimal
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      reflex init
+    startCommand: reflex run --env prod --loglevel info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+    autoDeploy: true
+    healthCheckPath: /
