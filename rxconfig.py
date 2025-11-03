@@ -10,6 +10,4 @@ config = rx.Config(
     backend_port=port,
     frontend_port=port,  # Use same port for frontend
     disable_plugins=["reflex.plugins.sitemap.SitemapPlugin"],
-    # Ensure app listens on all interfaces
-    api_url="",
 )
