@@ -25,6 +25,8 @@ config = rx.Config(
     backend_port=port,
     # Frontend configuration - Use same port in production (Render), separate in development
     frontend_port=port if is_production else DEFAULT_FRONTEND_PORT,
+    # API URL - Critical for Render deployment
+    api_url=f"http://0.0.0.0:{port}" if is_production else None,
     # Disable plugins
     disable_plugins=["reflex.plugins.sitemap.SitemapPlugin"],
 )
