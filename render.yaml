@@ -13,7 +13,7 @@ services:
       pip install --upgrade pip
       pip install -r requirements.txt
       reflex init
-    startCommand: echo "Render PORT is $PORT" && reflex run --frontend-port $PORT --backend-port $PORT
+    startCommand: echo "Render PORT is $PORT" && reflex run
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
