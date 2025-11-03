@@ -3,19 +3,25 @@ Job Organizer - Minimal Reflex App for Render Deployment Testing
 This is a minimal version to ensure deployment works correctly
 """
 import reflex as rx
+from typing import Optional
 
 class State(rx.State):
-    """Simple state for testing"""
+    """Simple state for testing deployment functionality"""
     message: str = "Backend connected successfully! ✅"
     counter: int = 0
     
-    def increment(self):
-        """Test state mutation"""
+    def increment(self) -> None:
+        """Test state mutation and backend-frontend communication"""
         self.counter += 1
         self.message = f"Button clicked {self.counter} times"
 
 def index() -> rx.Component:
-    """Minimal page to test deployment"""
+    """
+    Create the main page component for deployment testing.
+    
+    Returns:
+        rx.Component: The main page layout with test functionality
+    """
     return rx.container(
         rx.vstack(
             rx.heading("Job Organizer - Minimal Test", size="9"),
