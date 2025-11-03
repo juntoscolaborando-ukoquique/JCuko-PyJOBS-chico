@@ -13,8 +13,7 @@ services:
       pip install --upgrade pip
       pip install -r requirements.txt
       reflex init
-      reflex build --frontend-only
-    startCommand: PORT=$PORT reflex run --env prod
+    startCommand: PORT=$PORT reflex run
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
