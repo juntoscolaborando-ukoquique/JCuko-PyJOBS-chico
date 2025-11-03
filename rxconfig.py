@@ -6,10 +6,10 @@ port = int(os.getenv("PORT", "8000"))
 
 config = rx.Config(
     app_name="job_organizer",
+    # CRITICAL: Must bind to 0.0.0.0 for Render to detect
+    frontend_host="0.0.0.0",
     backend_host="0.0.0.0",
     backend_port=port,
     frontend_port=port,  # Use same port for frontend
     disable_plugins=["reflex.plugins.sitemap.SitemapPlugin"],
-    # Explicitly set API URL to bind correctly
-    api_url=f"http://0.0.0.0:{port}",
 )
