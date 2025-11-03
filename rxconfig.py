@@ -8,10 +8,11 @@ print(f"[RXCONFIG] Binding to: 0.0.0.0:{port}")
 
 config = rx.Config(
     app_name="job_organizer",
-    # CRITICAL: Must bind to 0.0.0.0 for Render to detect
-    frontend_host="0.0.0.0",
+    # Backend configuration
     backend_host="0.0.0.0",
     backend_port=port,
-    frontend_port=port,  # Use same port for frontend
+    # Frontend configuration - MUST use same port as backend
+    frontend_port=port,
+    # Disable plugins
     disable_plugins=["reflex.plugins.sitemap.SitemapPlugin"],
 )
