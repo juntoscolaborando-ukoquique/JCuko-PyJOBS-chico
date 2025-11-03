@@ -81,6 +81,151 @@ If Blueprint still has issues:
 
 ---
 
+## 🚨 Critical Issue Discovered: Backend-Only Mode Problems
+
+### **What Happened During Latest Deployment**
+
+**Timeline:**
+1. ✅ Code pushed to GitHub with clean code improvements
+2. ✅ Render auto-deploy triggered
+3. ✅ Build completed successfully
+4. ❌ **Deployment timed out** despite backend starting
+
+### **Root Cause: Backend-Only Mode Doesn't Serve Frontend**
+
+**The Problem:**
+```bash
+# This command was used:
+reflex run --env prod --backend-only
+
+# What it does:
+✅ Starts backend API server on PORT
+❌ Does NOT serve frontend static files
+❌ Health check at "/" returns 404 Not Found
+❌ Render times out waiting for successful health check
+```
+
+**Evidence from Logs:**
+```
+Backend running at: http://0.0.0.0:10000
+==> Timed Out
+```
+
+**Local Testing Confirmed:**
+```bash
+# Production mode locally:
+ENVIRONMENT=production PORT=10000 reflex run --env prod --backend-only
+
+# Result: curl http://localhost:10000/ → 404 Not Found
+```
+
+### **Solutions Attempted (All Failed)**
+
+#### **Attempt 1: Add Health Check Endpoint**
+```python
+# Tried adding to job_organizer.py:
+@app.api.get("/health")  # ❌ AttributeError
+def health_check():
+    return {"status": "healthy"}
+```
+
+**Result:** Reflex App object has no `api` attribute
+
+#### **Attempt 2: FastAPI Integration**
+```python
+# Tried FastAPI approach:
+fastapi_app = FastAPI()
+@fastapi_app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+app.api = fastapi_app  # ❌ Integration failed
+```
+
+**Result:** Complex integration issues
+
+#### **Attempt 3: Export Frontend First**
+```bash
+reflex export --frontend-only  # ✅ Worked
+# Created frontend.zip with 16 files including index.html
+
+ENVIRONMENT=production PORT=10005 reflex run --env prod --backend-only
+# Still: curl http://localhost:10005/ → 404 Not Found
+```
+
+**Result:** Backend-only mode still doesn't serve static files
+
+### **The Real Issue: Misunderstanding of Backend-Only Mode**
+
+**What `--backend-only` Actually Does:**
+- ✅ Runs the Python backend/API server
+- ✅ Exposes WebSocket endpoints for state management
+- ❌ **Does NOT serve compiled frontend static files**
+- ❌ Root path "/" is not served
+
+**Intended Use Case:**
+- Deploy frontend separately (Netlify/Vercel)
+- Deploy backend separately (Render/Heroku)
+- Frontend calls backend APIs directly
+
+**Our Use Case (Wrong Approach):**
+- Single service deployment
+- Frontend + Backend together
+- `--backend-only` was the wrong choice
+
+### **The Solution: Remove Backend-Only Flag**
+
+**Correct Approach for Single-Service Deployment:**
+```yaml
+# In render.yaml:
+startCommand: reflex run --env prod  # Remove --backend-only
+healthCheckPath: /
+```
+
+**What This Does:**
+- ✅ Runs both frontend AND backend in production mode
+- ✅ Frontend served on same port as backend
+- ✅ Health check at "/" returns HTML (200 OK)
+- ✅ Render deployment succeeds
+
+### **Why This Works**
+
+**Regular Production Mode:**
+```
+reflex run --env prod
+├── Frontend: Port 3000 (development) or PORT (production)
+├── Backend: Port 8000 (development) or PORT (production)
+└── Single process handles both
+```
+
+**Backend-Only Mode (Wrong for our use case):**
+```
+reflex run --env prod --backend-only
+├── Frontend: Must be deployed separately
+├── Backend: Port PORT (only API/WebSocket)
+└── Static files not served
+```
+
+### **Next Steps**
+
+1. **Remove `--backend-only` flag** from `render.yaml`
+2. **Push changes** to trigger new deployment
+3. **Monitor logs** for successful startup
+4. **Verify** frontend loads at deployment URL
+
+### **Key Learning**
+
+**Backend-only mode is for:**
+- Microservices architectures
+- Separate frontend/backend deployments
+- API-only services
+
+**Regular production mode is for:**
+- Monolithic deployments
+- Full-stack applications
+- Single-service deployments (like ours)
+
+---
+
 ## Troubleshooting
 
 ### "No repositories found"
